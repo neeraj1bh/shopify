@@ -1,12 +1,13 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import { searchQuery } from "./searchQuery.js";
+import { searchQuery } from "./helpers/searchQuery.js";
 
 dotenv.config();
 
 const apiEndpoint = process.env.SHOPIFY_API_ENDPOINT;
 const adminToken = process.env.SHOPIFY_ADMIN_TOKEN;
 
+// get product name from args
 const args = process.argv.slice(2);
 const nameIndex = args.indexOf("--name");
 
@@ -18,6 +19,7 @@ if (nameIndex === -1 || nameIndex === args.length - 1) {
 const productName = args.slice(nameIndex + 1).join(" ");
 
 async function fetchProducts(cursor = null) {
+  // paginated query for products
   const paginatedQuery = searchQuery(productName, 250, cursor);
 
   try {
@@ -56,6 +58,7 @@ async function displayProducts(cursor = null) {
     return;
   }
 
+  // flatten and sort products and variants
   const variantsList = products.edges
     .flatMap((product) =>
       product.node.variants.edges.map((variant) => ({
@@ -68,7 +71,7 @@ async function displayProducts(cursor = null) {
 
   variantsList.forEach((variant) => {
     console.log(
-      `${variant.productName} - ${
+      `${variant.productName} - variant ${
         variant.variantTitle
       } - price $${variant.price.toFixed(0)}`
     );
